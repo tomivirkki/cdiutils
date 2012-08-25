@@ -13,10 +13,10 @@ import javax.inject.Inject;
 
 import org.vaadin.virkki.cdiutils.TextBundle;
 
+import com.vaadin.terminal.Sizeable.Unit;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.AbstractField;
-import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.Button;
@@ -51,7 +51,6 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.Upload;
-import com.vaadin.ui.UriFragmentUtility;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 
@@ -93,7 +92,7 @@ public class ComponentProducers implements Serializable {
     private <T extends Component> T configureComponent(final T c,
             final InjectionPoint injectionPoint) {
         T component = c;
-        for (Annotation annotation : injectionPoint.getQualifiers()) {
+        for (final Annotation annotation : injectionPoint.getQualifiers()) {
             if (annotation instanceof Preconfigured) {
                 final Preconfigured preconfigured = (Preconfigured) annotation;
 
@@ -103,9 +102,9 @@ public class ComponentProducers implements Serializable {
                         try {
                             component = (T) preconfigured.implementation()
                                     .newInstance();
-                        } catch (InstantiationException e) {
+                        } catch (final InstantiationException e) {
                             e.printStackTrace();
-                        } catch (IllegalAccessException e) {
+                        } catch (final IllegalAccessException e) {
                             e.printStackTrace();
                         }
                     }
@@ -127,10 +126,6 @@ public class ComponentProducers implements Serializable {
                     configureAbstractSelectApi((AbstractSelect) component,
                             preconfigured);
                 }
-                if (component instanceof AbstractLayout) {
-                    ((AbstractLayout) component).setMargin(preconfigured
-                            .margin());
-                }
                 if (component instanceof AbstractOrderedLayout) {
                     ((AbstractOrderedLayout) component)
                             .setSpacing(preconfigured.spacing());
@@ -147,9 +142,9 @@ public class ComponentProducers implements Serializable {
                 .nullSelectionAllowed());
         abstractSelect.setMultiSelect(preconfigured.multiSelect());
         abstractSelect.setNewItemsAllowed(preconfigured.newItemsAllowed());
-        if (preconfigured.itemCaptionMode() > -1) {
-            abstractSelect.setItemCaptionMode(preconfigured.itemCaptionMode());
-        }
+        // if (preconfigured.itemCaptionMode() > -1) {
+        abstractSelect.setItemCaptionMode(preconfigured.itemCaptionMode());
+        // }
 
     }
 
@@ -159,8 +154,6 @@ public class ComponentProducers implements Serializable {
             abstractField.setInvalidAllowed(preconfigured.invalidAllowed());
         }
         abstractField.setInvalidCommitted(preconfigured.invalidCommitted());
-        abstractField.setReadThrough(preconfigured.readTrough());
-        abstractField.setReadThrough(preconfigured.writeTrough());
         abstractField.setValidationVisible(preconfigured.validationVisible());
         if (preconfigured.tabIndex() > -1) {
             abstractField.setTabIndex(preconfigured.tabIndex());
@@ -171,7 +164,7 @@ public class ComponentProducers implements Serializable {
             final Preconfigured preconfigured) {
         final String description = preconfigured.description();
         if (!description.isEmpty()) {
-            field.setDescription(description);
+            // field.setDescription(description);
         }
 
         final String requiredError = preconfigured.requiredError();
@@ -199,7 +192,7 @@ public class ComponentProducers implements Serializable {
             if (!captionKey.isEmpty()) {
                 try {
                     component.setCaption(textBundle.get().getText(captionKey));
-                } catch (UnsatisfiedResolutionException e) {
+                } catch (final UnsatisfiedResolutionException e) {
                     component.setCaption("No TextBundle implementation found!");
                 }
             }
@@ -208,18 +201,18 @@ public class ComponentProducers implements Serializable {
         }
 
         if (component instanceof Label) {
-            String labelValueKey = preconfigured.labelValueKey();
+            final String labelValueKey = preconfigured.labelValueKey();
             if (!labelValueKey.isEmpty()) {
                 try {
                     ((Label) component).setValue(textBundle.get().getText(
                             labelValueKey));
-                } catch (UnsatisfiedResolutionException e) {
+                } catch (final UnsatisfiedResolutionException e) {
                     component.setCaption("No TextBundle implementation found!");
                 }
             }
         }
 
-        String debugId = preconfigured.debugId();
+        final String debugId = preconfigured.debugId();
         if (!debugId.isEmpty()) {
             component.setDebugId(debugId);
         }
@@ -229,14 +222,14 @@ public class ComponentProducers implements Serializable {
         } else if (preconfigured.sizeUndefined()) {
             component.setSizeUndefined();
         } else {
-            float width = preconfigured.width();
+            final float width = preconfigured.width();
             if (width > -1.0f) {
-                int widthUnits = preconfigured.widthUnits();
+                final Unit widthUnits = preconfigured.widthUnits();
                 component.setWidth(width, widthUnits);
             }
-            float height = preconfigured.height();
+            final float height = preconfigured.height();
             if (height > -1.0f) {
-                int heightUnits = preconfigured.heightUnits();
+                final Unit heightUnits = preconfigured.heightUnits();
                 component.setHeight(height, heightUnits);
             }
         }
@@ -247,63 +240,63 @@ public class ComponentProducers implements Serializable {
     @Produces
     @Preconfigured
     public AbsoluteLayout createAbsoluteLayout(final InjectionPoint ip) {
-        AbsoluteLayout component = new AbsoluteLayout();
+        final AbsoluteLayout component = new AbsoluteLayout();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Button createButton(final InjectionPoint ip) {
-        Button component = new Button();
+        final Button component = new Button();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public ComboBox createComboBox(final InjectionPoint ip) {
-        ComboBox component = new ComboBox();
+        final ComboBox component = new ComboBox();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public CssLayout createCssLayout(final InjectionPoint ip) {
-        CssLayout component = new CssLayout();
+        final CssLayout component = new CssLayout();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Embedded createEmbedded(final InjectionPoint ip) {
-        Embedded component = new Embedded();
+        final Embedded component = new Embedded();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Form createForm(final InjectionPoint ip) {
-        Form component = new Form();
+        final Form component = new Form();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public FormLayout createFormLayout(final InjectionPoint ip) {
-        FormLayout component = new FormLayout();
+        final FormLayout component = new FormLayout();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public GridLayout createGridLayout(final InjectionPoint ip) {
-        GridLayout component = new GridLayout();
+        final GridLayout component = new GridLayout();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public HorizontalLayout createHorizontalLayout(final InjectionPoint ip) {
-        HorizontalLayout component = new HorizontalLayout();
+        final HorizontalLayout component = new HorizontalLayout();
         return configureComponent(component, ip);
     }
 
@@ -311,175 +304,168 @@ public class ComponentProducers implements Serializable {
     @Preconfigured
     public HorizontalSplitPanel createHorizontalSplitPanel(
             final InjectionPoint ip) {
-        HorizontalSplitPanel component = new HorizontalSplitPanel();
+        final HorizontalSplitPanel component = new HorizontalSplitPanel();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public InlineDateField createInlineDateField(final InjectionPoint ip) {
-        InlineDateField component = new InlineDateField();
+        final InlineDateField component = new InlineDateField();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Label createLabel(final InjectionPoint ip) {
-        Label component = new Label();
+        final Label component = new Label();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Link createLink(final InjectionPoint ip) {
-        Link component = new Link();
+        final Link component = new Link();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public ListSelect createListSelect(final InjectionPoint ip) {
-        ListSelect component = new ListSelect();
+        final ListSelect component = new ListSelect();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public LoginForm createLoginForm(final InjectionPoint ip) {
-        LoginForm component = new LoginForm();
+        final LoginForm component = new LoginForm();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public MenuBar createMenuBar(final InjectionPoint ip) {
-        MenuBar component = new MenuBar();
+        final MenuBar component = new MenuBar();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public NativeSelect createNativeSelect(final InjectionPoint ip) {
-        NativeSelect component = new NativeSelect();
+        final NativeSelect component = new NativeSelect();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public OptionGroup createOptionGroup(final InjectionPoint ip) {
-        OptionGroup component = new OptionGroup();
+        final OptionGroup component = new OptionGroup();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Panel createPanel(final InjectionPoint ip) {
-        Panel component = new Panel();
+        final Panel component = new Panel();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public PasswordField createPasswordField(final InjectionPoint ip) {
-        PasswordField component = new PasswordField();
+        final PasswordField component = new PasswordField();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public PopupDateField createPopupDateField(final InjectionPoint ip) {
-        PopupDateField component = new PopupDateField();
+        final PopupDateField component = new PopupDateField();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public ProgressIndicator createProgressIndicator(final InjectionPoint ip) {
-        ProgressIndicator component = new ProgressIndicator();
+        final ProgressIndicator component = new ProgressIndicator();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public RichTextArea createRichTextArea(final InjectionPoint ip) {
-        RichTextArea component = new RichTextArea();
+        final RichTextArea component = new RichTextArea();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Slider createSlider(final InjectionPoint ip) {
-        Slider component = new Slider();
+        final Slider component = new Slider();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Table createTable(final InjectionPoint ip) {
-        Table component = new Table();
+        final Table component = new Table();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public TabSheet createTabSheet(final InjectionPoint ip) {
-        TabSheet component = new TabSheet();
+        final TabSheet component = new TabSheet();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public TextArea createTextArea(final InjectionPoint ip) {
-        TextArea component = new TextArea();
+        final TextArea component = new TextArea();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public TextField createTextField(final InjectionPoint ip) {
-        TextField component = new TextField();
+        final TextField component = new TextField();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Tree createTree(final InjectionPoint ip) {
-        Tree component = new Tree();
+        final Tree component = new Tree();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public TwinColSelect createTwinColSelect(final InjectionPoint ip) {
-        TwinColSelect component = new TwinColSelect();
+        final TwinColSelect component = new TwinColSelect();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public Upload createUpload(final InjectionPoint ip) {
-        Upload component = new Upload();
-        return configureComponent(component, ip);
-    }
-
-    @Produces
-    @Preconfigured
-    public UriFragmentUtility createUriFragmentUtility(final InjectionPoint ip) {
-        UriFragmentUtility component = new UriFragmentUtility();
+        final Upload component = new Upload();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public VerticalLayout createVerticalLayout(final InjectionPoint ip) {
-        VerticalLayout component = new VerticalLayout();
+        final VerticalLayout component = new VerticalLayout();
         return configureComponent(component, ip);
     }
 
     @Produces
     @Preconfigured
     public VerticalSplitPanel createVerticalSplitPanel(final InjectionPoint ip) {
-        VerticalSplitPanel component = new VerticalSplitPanel();
+        final VerticalSplitPanel component = new VerticalSplitPanel();
         return configureComponent(component, ip);
     }
 

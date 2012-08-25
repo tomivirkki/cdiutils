@@ -7,13 +7,10 @@ import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.inject.Inject;
 
 import org.vaadin.virkki.cdiutils.TextBundle;
-import org.vaadin.virkki.cdiutils.application.AbstractCdiApplication;
-import org.vaadin.virkki.cdiutils.application.RequestData;
 import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
 import org.vaadin.virkki.cdiutils.mvp.CDIEvent.CDIEventImpl;
 
 import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.Window;
 
 /**
  * Superclass for views and their subcomponents.
@@ -26,8 +23,6 @@ public abstract class ViewComponent extends CustomComponent {
     private javax.enterprise.event.Event<ParameterDTO> viewEvent;
     @Inject
     private Instance<TextBundle> textBundle;
-    @Inject
-    private Instance<RequestData> requestData;
     @Inject
     @Preconfigured
     protected transient Logger logger;
@@ -44,27 +39,5 @@ public abstract class ViewComponent extends CustomComponent {
             final Object primaryParameter, final Object... secondaryParameters) {
         viewEvent.select(new CDIEventImpl(methodIdentifier)).fire(
                 new ParameterDTO(primaryParameter, secondaryParameters));
-    }
-
-    /**
-     * Returns the {@link Window} bound to the current request.
-     * 
-     * @return
-     */
-    protected Window getContextWindow() {
-        Window window = requestData.get().getWindow();
-        if (window == null) {
-            window = getContextApplication().getMainWindow();
-        }
-        return window;
-    }
-
-    /**
-     * Returns the {@link AbstractCdiApplication} bound to the current request.
-     * 
-     * @return
-     */
-    protected AbstractCdiApplication getContextApplication() {
-        return requestData.get().getApplication();
     }
 }

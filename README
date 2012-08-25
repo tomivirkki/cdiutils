@@ -2,30 +2,21 @@ CDI Utils is an add-on for Vaadin framework aiming at simplifying
 application development with Vaadin and CDI. Here are the utilities it provides:
 
 1. @VaadinScope
-Custom CDI scope designed especially for vaadin applications. @VaadinScope has two modes:
-@VaadinScoped(VaadinScope.WINDOW) (default) instances are specific to 
-Vaadin application-level windows in multi-windowed applications. 
-
-The other mode @VaadinScoped(VaadinScope.APPLICATION) declares beans whose 
-instances are shared by all Windows inside a single Vaadin application. 
+Custom CDI scope designed especially for vaadin applications. @VaadinScope instances are
+bound to a context defined by Vaadin Roots. 
 
 
-2. AbstractCdiApplication/AbstractCdiApplicationServlet
-Vaadin Application and Servlet extensions customized for CDI applications. Remember to 
-decorate your own AbstractCdiApplicationServlet with @ApplicationClass(YourApplicationClass.class)
-
-
-3. Lightweight MVP framework
-3.1.Extend View interface for your view
-3.2.Create view instance that extends AbstractView and implements your View extension
-3.3.Extend AbstractPresenter and annotate it with @ViewInterface(YourViewInterface.class)
+2. Lightweight MVP framework
+2.1.Extend View interface for your view
+2.2.Create view instance that extends AbstractView and implements your View extension
+2.3.Extend AbstractPresenter and annotate it with @ViewInterface(YourViewInterface.class)
 That's it.
 -The correct view instance is then automatically injected to your presenter (Your view control logic can then reside in the presenter)
 -The view should use CDI's built-in event bus to fire events that are observed by the presenter. The add-on provides a utility for this: fireViewEvent(ParameterDTO). The ParameterDTO can be used to transfer any data to the presenter (CDI Event observers only accept one parameter)
 -Call yourViewImplementationInstance.openView() each time the view is accessed (this will eventually invoke yourPresenterInstance.viewOpened())
 
 
-4. Producers for declaratively defined Vaadin components (@Preconfigured -annotation)
+3. Producers for declaratively defined Vaadin components (@Preconfigured -annotation)
 Inject preconfigured Vaadin Components to your views. For example:
 
 @Preconfigured(captionKey="btnUpdate", styleName=Button.STYLE_LINK, enabled=false)

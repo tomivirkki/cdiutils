@@ -20,12 +20,11 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Scope;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped.VaadinScope;
 import org.vaadin.virkki.cdiutils.mvp.AbstractPresenter;
 import org.vaadin.virkki.cdiutils.mvp.AbstractPresenter.ViewInterface;
 import org.vaadin.virkki.cdiutils.mvp.AbstractView;
 
-import com.vaadin.ui.Window;
+import com.vaadin.ui.Root;
 
 /**
  * CDI Extension which registers VaadinContextImpl context.
@@ -37,31 +36,16 @@ public class VaadinContext implements Extension {
     void afterBeanDiscovery(
             @Observes final AfterBeanDiscovery afterBeanDiscovery,
             final BeanManager beanManager) {
-        afterBeanDiscovery.addContext(new VaadinContextImpl(beanManager));
+        afterBeanDiscovery.addContext(new VaadinContextImpl());
     }
 
     /**
      * Custom CDI context for Vaadin applications. Stores references to bean
-     * instances in the scope of Vaadin Application or Vaadin application-level
-     * Window.
+     * instances in the scope of Vaadin Root.
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
     private static class VaadinContextImpl implements Context {
-        // TODO: logging
-        private final BeanManager beanManager;
-
-        public VaadinContextImpl(final BeanManager beanManager) {
-            this.beanManager = beanManager;
-        }
-
-        private RequestData getRequestData() {
-            final Bean<?> bean = beanManager.getBeans(RequestData.class)
-                    .iterator().next();
-            return (RequestData) beanManager.getReference(bean,
-                    bean.getBeanClass(),
-                    beanManager.createCreationalContext(bean));
-        }
 
         @Override
         public <T> T get(final Contextual<T> contextual) {
@@ -77,30 +61,21 @@ public class VaadinContext implements Extension {
         private <T> T doGet(final Bean<T> bean,
                 final CreationalContext<T> creationalContext) {
 
-            if (creationalContext != null
-                    && getRequestData().getApplication() == null
-                    && AbstractCdiApplication.class.isAssignableFrom(bean
-                            .getBeanClass())) {
-                // Application doesn't exist yet, create one
-                final AbstractCdiApplication application = (AbstractCdiApplication) bean
+            if (Root.getCurrent() == null && creationalContext != null) {
+                // Instantiating the root
+                final AbstractCdiRoot root = (AbstractCdiRoot) bean
                         .create(creationalContext);
-                final ApplicationBeanStore beanStore = application
-                        .getBeanStore();
+                final RootBeanStore beanStore = root.getBeanStore();
                 beanStore.addBeanInstance(bean,
-                        beanStore.new ContextualInstance<T>((T) application,
+                        beanStore.new ContextualInstance<T>((T) root,
                                 creationalContext));
-                getRequestData().setApplication(application);
-            }
-
-            final AbstractCdiApplication application = getRequestData()
-                    .getApplication();
-            ApplicationBeanStore beanStore = null;
-            if (application != null) {
-                beanStore = application.getBeanStore();
+                Root.setCurrent(root);
             }
 
             T instance = null;
-            if (beanStore != null) {
+            if (Root.getCurrent() != null) {
+                final RootBeanStore beanStore = ((AbstractCdiRoot) Root
+                        .getCurrent()).getBeanStore();
                 instance = beanStore.getBeanInstance(bean, creationalContext);
             }
             return instance;
@@ -118,115 +93,12 @@ public class VaadinContext implements Extension {
     }
 
     /**
-     * Datastructure for storing bean instances and child {@link BeanStore}s in
-     * {@link VaadinScope}.APPLICATION context.
+     * Datastructure for storing bean instances in {@link VaadinScope} context.
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
-    static class ApplicationBeanStore extends BeanStore {
-        private final Map<Window, BeanStore> windowBeanStores = new HashMap<Window, BeanStore>();
-
-        public ApplicationBeanStore(final BeanManager beanManager) {
-            super(beanManager);
-        }
-
-        @Override
-        protected <T> T getBeanInstance(final Bean<T> bean,
-                final CreationalContext<T> creationalContext) {
-            final VaadinScope scope = bean.getBeanClass()
-                    .getAnnotation(VaadinScoped.class).value();
-            T instance = null;
-            if (scope == VaadinScope.WINDOW) {
-                final Window window = getRequestData().getWindow();
-                final BeanStore windowBeanStore = getWindowBeanStore(window,
-                        creationalContext != null);
-                if (windowBeanStore != null) {
-                    instance = windowBeanStore.getBeanInstance(bean,
-                            creationalContext);
-                }
-            } else {
-                instance = super.getBeanInstance(bean, creationalContext);
-            }
-            return instance;
-        }
-
-        public BeanStore getWindowBeanStore(final Window window,
-                final boolean create) {
-            Window key = window;
-            if (key != null && key.getApplication().getMainWindow() == key) {
-                // We're using null as the key value for main Window.
-                key = null;
-            }
-            BeanStore beanStore = windowBeanStores.get(key);
-            if (beanStore == null && create) {
-                beanStore = new BeanStore(beanManager);
-                windowBeanStores.put(key, beanStore);
-            }
-            return beanStore;
-        }
-
-        @Override
-        public void dereferenceAllBeanInstances() {
-            for (final Window window : new HashSet<Window>(
-                    windowBeanStores.keySet())) {
-                dereferenceContext(window);
-            }
-            super.dereferenceAllBeanInstances();
-        }
-
-        public void dereferenceContext(final Window window) {
-            final BeanStore beanStore = getWindowBeanStore(window, false);
-            if (beanStore != null) {
-                beanStore.dereferenceAllBeanInstances();
-            }
-
-            if (window != null
-                    && window.getApplication().getMainWindow() == window) {
-                windowBeanStores.remove(null);
-            } else {
-                windowBeanStores.remove(window);
-            }
-        }
-
-        @Override
-        public <T> void dereferenceBeanInstance(final Bean<T> bean) {
-            final VaadinScope scope = bean.getBeanClass()
-                    .getAnnotation(VaadinScoped.class).value();
-            if (scope == VaadinScope.WINDOW) {
-                final Window window = getRequestData().getWindow();
-                final BeanStore windowBeanStore = getWindowBeanStore(window,
-                        false);
-                if (windowBeanStore != null) {
-                    windowBeanStore.dereferenceBeanInstance(bean);
-                }
-            } else {
-                super.dereferenceBeanInstance(bean);
-            }
-        }
-    }
-
-    /**
-     * Datastructure for storing bean instances in {@link VaadinScope}.WINDOW
-     * context.
-     * 
-     * @author Tomi Virkki / Vaadin Ltd
-     */
-    static class BeanStore {
+    static class RootBeanStore {
         private final Map<Bean<?>, ContextualInstance<?>> instances = new HashMap<Bean<?>, ContextualInstance<?>>();
-        protected final BeanManager beanManager;
-
-        public BeanStore(final BeanManager beanManager) {
-            super();
-            this.beanManager = beanManager;
-        }
-
-        protected RequestData getRequestData() {
-            final Bean<?> bean = beanManager.getBeans(RequestData.class)
-                    .iterator().next();
-            return (RequestData) beanManager.getReference(bean,
-                    bean.getBeanClass(),
-                    beanManager.createCreationalContext(bean));
-        }
 
         @SuppressWarnings("unchecked")
         protected <T> T getBeanInstance(final Bean<T> bean,
@@ -238,7 +110,11 @@ public class VaadinContext implements Extension {
                         bean.create(creationalContext), creationalContext);
                 addBeanInstance(bean, contextualInstance);
             }
-            return contextualInstance.getInstance();
+            T instance = null;
+            if (contextualInstance != null) {
+                instance = contextualInstance.getInstance();
+            }
+            return instance;
         }
 
         public void addBeanInstance(final Bean<?> bean,
@@ -313,15 +189,11 @@ public class VaadinContext implements Extension {
      * @author Tomi Virkki / Vaadin Ltd
      */
     @Scope
+    // TODO: NormalScope
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Inherited
     public @interface VaadinScoped {
-        VaadinScope value() default VaadinScope.WINDOW;
-
-        public enum VaadinScope {
-            APPLICATION, WINDOW
-        }
     }
 
 }
