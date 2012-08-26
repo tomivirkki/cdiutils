@@ -1,14 +1,15 @@
 package org.vaadin.virkki.cdiutils.application;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.vaadin.virkki.cdiutils.application.VaadinContext.BeanStoreContainer;
+
 import com.vaadin.Application;
+import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.terminal.CombinedRequest;
 import com.vaadin.terminal.DefaultRootProvider;
 import com.vaadin.terminal.WrappedRequest;
 import com.vaadin.terminal.gwt.server.ApplicationServlet;
@@ -18,11 +19,9 @@ import com.vaadin.ui.Root;
 public class CdiApplicationServlet extends ApplicationServlet {
 
     @Inject
-    private Instance<AbstractCdiRoot> rootInstance;
-
-    //
-    // private Map<Root, RootBeanStore> beanStores = new HashMap<Root,
-    // VaadinContext.RootBeanStore>();
+    private Instance<Root> rootInstance;
+    @Inject
+    private BeanStoreContainer beanStoreContainer;
 
     @Override
     protected Application getNewApplication(final HttpServletRequest request)
@@ -30,24 +29,38 @@ public class CdiApplicationServlet extends ApplicationServlet {
         final Application app = super.getNewApplication(request);
         app.addRootProvider(new DefaultRootProvider() {
 
-            private final Map<Application, AbstractCdiRoot> roots = new HashMap<Application, AbstractCdiRoot>();
-
             @Override
             public Root instantiateRoot(final Application application,
                     final Class<? extends Root> type,
                     final WrappedRequest request) {
-                // TODO: Exceptions
-                AbstractCdiRoot root = roots.get(application);
-                if (root == null
-                        || !root.getApplication().getRoots().contains(root)) {
-
-                    root = rootInstance.select(
-                            type.asSubclass(AbstractCdiRoot.class)).get();
-                    root.setApplication(app);
+                Root root = null;
+                final Integer rootId = getRootId(request);
+                if (rootId != null) {
+                    root = application.getRootById(rootId);
+                }
+                if (root == null) {
+                    Root.setCurrent(null);
+                    root = rootInstance.select(type.asSubclass(Root.class))
+                            .get();
+                    root.setApplication(application);
+                    beanStoreContainer.rootInitialized(root);
                 }
                 return root;
             }
         });
         return app;
+    }
+
+    private static Integer getRootId(WrappedRequest request) {
+        if (request instanceof CombinedRequest) {
+            // Combined requests has the rootid parameter in the second request
+            final CombinedRequest combinedRequest = (CombinedRequest) request;
+            request = combinedRequest.getSecondRequest();
+        }
+        final String rootIdString = request
+                .getParameter(ApplicationConstants.ROOT_ID_PARAMETER);
+        final Integer rootId = rootIdString == null ? null : new Integer(
+                rootIdString);
+        return rootId;
     }
 }

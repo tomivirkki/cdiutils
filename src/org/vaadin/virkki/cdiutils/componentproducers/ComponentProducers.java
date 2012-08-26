@@ -20,6 +20,7 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
@@ -248,6 +249,13 @@ public class ComponentProducers implements Serializable {
     @Preconfigured
     public Button createButton(final InjectionPoint ip) {
         final Button component = new Button();
+        return configureComponent(component, ip);
+    }
+
+    @Produces
+    @Preconfigured
+    public CheckBox createCheckBox(final InjectionPoint ip) {
+        final CheckBox component = new CheckBox();
         return configureComponent(component, ip);
     }
 

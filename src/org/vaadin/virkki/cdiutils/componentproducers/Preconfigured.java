@@ -50,9 +50,6 @@ public @interface Preconfigured {
     @Nonbinding
     boolean spacing() default false;
 
-    // @Nonbinding
-    // boolean margin() default false;
-
     @Nonbinding
     boolean sizeFull() default false;
 
@@ -103,12 +100,6 @@ public @interface Preconfigured {
 
     @Nonbinding
     boolean invalidCommitted() default false;
-
-    // @Nonbinding
-    // boolean readTrough() default true;
-    //
-    // @Nonbinding
-    // boolean writeTrough() default true;
 
     @Nonbinding
     boolean validationVisible() default true;

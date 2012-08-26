@@ -1,5 +1,6 @@
 package org.vaadin.virkki.cdiutils.application;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import javax.annotation.PreDestroy;
+import javax.enterprise.context.SessionScoped;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
@@ -19,10 +22,6 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Scope;
-
-import org.vaadin.virkki.cdiutils.mvp.AbstractPresenter;
-import org.vaadin.virkki.cdiutils.mvp.AbstractPresenter.ViewInterface;
-import org.vaadin.virkki.cdiutils.mvp.AbstractView;
 
 import com.vaadin.ui.Root;
 
@@ -36,49 +35,42 @@ public class VaadinContext implements Extension {
     void afterBeanDiscovery(
             @Observes final AfterBeanDiscovery afterBeanDiscovery,
             final BeanManager beanManager) {
-        afterBeanDiscovery.addContext(new VaadinContextImpl());
+        afterBeanDiscovery.addContext(new VaadinContextImpl(beanManager));
     }
 
     /**
      * Custom CDI context for Vaadin applications. Stores references to bean
-     * instances in the scope of Vaadin Root.
+     * instances in the scope of a Vaadin Root.
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
     private static class VaadinContextImpl implements Context {
 
+        private final BeanManager beanManager;
+
+        public VaadinContextImpl(final BeanManager beanManager) {
+            this.beanManager = beanManager;
+        }
+
+        private RootBeanStore getCurrentBeanStore() {
+            final Bean<?> bean = beanManager.getBeans(BeanStoreContainer.class)
+                    .iterator().next();
+            final BeanStoreContainer container = (BeanStoreContainer) beanManager
+                    .getReference(bean, bean.getBeanClass(),
+                            beanManager.createCreationalContext(bean));
+            return container.getBeanStore(Root.getCurrent());
+        }
+
         @Override
         public <T> T get(final Contextual<T> contextual) {
-            return doGet((Bean<T>) contextual, null);
+            return get(contextual, null);
         }
 
         @Override
         public <T> T get(final Contextual<T> contextual,
                 final CreationalContext<T> creationalContext) {
-            return doGet((Bean<T>) contextual, creationalContext);
-        }
-
-        private <T> T doGet(final Bean<T> bean,
-                final CreationalContext<T> creationalContext) {
-
-            if (Root.getCurrent() == null && creationalContext != null) {
-                // Instantiating the root
-                final AbstractCdiRoot root = (AbstractCdiRoot) bean
-                        .create(creationalContext);
-                final RootBeanStore beanStore = root.getBeanStore();
-                beanStore.addBeanInstance(bean,
-                        beanStore.new ContextualInstance<T>((T) root,
-                                creationalContext));
-                Root.setCurrent(root);
-            }
-
-            T instance = null;
-            if (Root.getCurrent() != null) {
-                final RootBeanStore beanStore = ((AbstractCdiRoot) Root
-                        .getCurrent()).getBeanStore();
-                instance = beanStore.getBeanInstance(bean, creationalContext);
-            }
-            return instance;
+            return getCurrentBeanStore().getBeanInstance((Bean<T>) contextual,
+                    creationalContext);
         }
 
         @Override
@@ -108,18 +100,10 @@ public class VaadinContext implements Extension {
             if (contextualInstance == null && creationalContext != null) {
                 contextualInstance = new ContextualInstance<T>(
                         bean.create(creationalContext), creationalContext);
-                addBeanInstance(bean, contextualInstance);
+                instances.put(bean, contextualInstance);
             }
-            T instance = null;
-            if (contextualInstance != null) {
-                instance = contextualInstance.getInstance();
-            }
-            return instance;
-        }
-
-        public void addBeanInstance(final Bean<?> bean,
-                final ContextualInstance<?> instance) {
-            instances.put(bean, instance);
+            return contextualInstance != null ? contextualInstance
+                    .getInstance() : null;
         }
 
         public void dereferenceAllBeanInstances() {
@@ -136,28 +120,6 @@ public class VaadinContext implements Extension {
                 bean.destroy(contextualInstance.getInstance(),
                         contextualInstance.getCreationalContext());
                 instances.remove(bean);
-            }
-
-            if (AbstractView.class.isAssignableFrom(bean.getBeanClass())) {
-                // An AbstractView was dereferenced. The presenter should be
-                // dereferenced as well
-                Bean<?> removablePresenterBean = null;
-                for (final Bean<?> presenterBean : instances.keySet()) {
-                    if (AbstractPresenter.class.isAssignableFrom(presenterBean
-                            .getBeanClass())) {
-                        final ViewInterface viewInterface = presenterBean
-                                .getBeanClass().getAnnotation(
-                                        ViewInterface.class);
-                        if (viewInterface.value().isAssignableFrom(
-                                bean.getBeanClass())) {
-                            removablePresenterBean = presenterBean;
-                            break;
-                        }
-                    }
-                }
-                if (removablePresenterBean != null) {
-                    dereferenceBeanInstance(removablePresenterBean);
-                }
             }
         }
 
@@ -179,7 +141,34 @@ public class VaadinContext implements Extension {
             public CreationalContext<T> getCreationalContext() {
                 return creationalContext;
             }
+        }
+    }
 
+    @SuppressWarnings("serial")
+    @SessionScoped
+    static class BeanStoreContainer implements Serializable {
+        private final Map<Integer, RootBeanStore> beanStores = new HashMap<Integer, VaadinContext.RootBeanStore>();
+
+        public RootBeanStore getBeanStore(final Root current) {
+            final Integer key = current != null ? current.hashCode() : null;
+            if (!beanStores.containsKey(key)) {
+                beanStores.put(key, new RootBeanStore());
+            }
+            return beanStores.get(key);
+        }
+
+        public void rootInitialized(final Root root) {
+            beanStores.put(root.hashCode(), beanStores.remove(null));
+            // TODO: Listen for Root close -> Dereference beans of the related
+            // beanstore
+        }
+
+        @SuppressWarnings("unused")
+        @PreDestroy
+        private void preDestroy() {
+            for (final RootBeanStore beanStore : beanStores.values()) {
+                beanStore.dereferenceAllBeanInstances();
+            }
         }
     }
 
