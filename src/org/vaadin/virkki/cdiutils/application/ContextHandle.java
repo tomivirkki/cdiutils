@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import org.vaadin.virkki.cdiutils.application.VaadinContext.BeanStoreContainer;
 import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
 
-import com.vaadin.ui.Root;
+import com.vaadin.ui.UI;
 
 @VaadinScoped
 public class ContextHandle {
@@ -26,7 +26,7 @@ public class ContextHandle {
      */
     public void dereferenceBeanInstance(final Class<? extends Object> beanClass) {
         final Bean<?> bean = beanManager.getBeans(beanClass).iterator().next();
-        beanStoreContainer.getBeanStore(Root.getCurrent())
+        beanStoreContainer.getBeanStore(UI.getCurrent())
                 .dereferenceBeanInstance(bean);
     }
 }

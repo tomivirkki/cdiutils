@@ -8,18 +8,18 @@ import javax.servlet.http.HttpServletRequest;
 import org.vaadin.virkki.cdiutils.application.VaadinContext.BeanStoreContainer;
 
 import com.vaadin.Application;
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.terminal.CombinedRequest;
-import com.vaadin.terminal.DefaultRootProvider;
+import com.vaadin.terminal.DefaultUIProvider;
 import com.vaadin.terminal.WrappedRequest;
 import com.vaadin.terminal.gwt.server.ApplicationServlet;
-import com.vaadin.ui.Root;
+import com.vaadin.ui.UI;
 
 @SuppressWarnings("serial")
 public class CdiApplicationServlet extends ApplicationServlet {
 
     @Inject
-    private Instance<Root> rootInstance;
+    private Instance<UI> uiInstance;
     @Inject
     private BeanStoreContainer beanStoreContainer;
 
@@ -27,40 +27,39 @@ public class CdiApplicationServlet extends ApplicationServlet {
     protected Application getNewApplication(final HttpServletRequest request)
             throws ServletException {
         final Application app = super.getNewApplication(request);
-        app.addRootProvider(new DefaultRootProvider() {
-
+        app.addUIProvider(new DefaultUIProvider() {
             @Override
-            public Root instantiateRoot(final Application application,
-                    final Class<? extends Root> type,
-                    final WrappedRequest request) {
-                Root root = null;
-                final Integer rootId = getRootId(request);
-                if (rootId != null) {
-                    root = application.getRootById(rootId);
+            public UI instantiateUI(final Application application,
+                    final Class<? extends UI> type, final WrappedRequest request) {
+                UI ui = null;
+                final Integer uiId = getUIId(request);
+                if (uiId != null) {
+                    ui = application.getUIById(uiId);
                 }
-                if (root == null) {
-                    Root.setCurrent(null);
-                    root = rootInstance.select(type.asSubclass(Root.class))
-                            .get();
-                    root.setApplication(application);
-                    beanStoreContainer.rootInitialized(root);
+                if (ui == null) {
+
+                    UI.setCurrent(null);
+                    ui = uiInstance.select(type.asSubclass(UI.class)).get();
+                    ui.setApplication(application);
+                    beanStoreContainer.uiInitialized(ui);
                 }
-                return root;
+                return ui;
             }
         });
+
         return app;
     }
 
-    private static Integer getRootId(WrappedRequest request) {
+    private static Integer getUIId(WrappedRequest request) {
         if (request instanceof CombinedRequest) {
-            // Combined requests has the rootid parameter in the second request
+            // Combined requests has the uiId parameter in the second request
             final CombinedRequest combinedRequest = (CombinedRequest) request;
             request = combinedRequest.getSecondRequest();
         }
-        final String rootIdString = request
-                .getParameter(ApplicationConstants.ROOT_ID_PARAMETER);
-        final Integer rootId = rootIdString == null ? null : new Integer(
-                rootIdString);
-        return rootId;
+        final String uiIdString = request
+                .getParameter(UIConstants.UI_ID_PARAMETER);
+        final Integer uiId = uiIdString == null ? null
+                : new Integer(uiIdString);
+        return uiId;
     }
 }
