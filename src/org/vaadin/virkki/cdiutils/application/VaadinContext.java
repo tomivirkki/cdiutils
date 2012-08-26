@@ -47,7 +47,7 @@ public class VaadinContext implements Extension {
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
-    private static class VaadinContextImpl implements Context {
+    public static class VaadinContextImpl implements Context {
         // TODO: logging
         private final BeanManager beanManager;
 
@@ -55,7 +55,7 @@ public class VaadinContext implements Extension {
             this.beanManager = beanManager;
         }
 
-        private RequestData getRequestData() {
+        public RequestData getRequestData() {
             final Bean<?> bean = beanManager.getBeans(RequestData.class)
                     .iterator().next();
             return (RequestData) beanManager.getReference(bean,
@@ -238,7 +238,8 @@ public class VaadinContext implements Extension {
                         bean.create(creationalContext), creationalContext);
                 addBeanInstance(bean, contextualInstance);
             }
-            return contextualInstance.getInstance();
+            return contextualInstance != null ? contextualInstance
+                    .getInstance() : null;
         }
 
         public void addBeanInstance(final Bean<?> bean,

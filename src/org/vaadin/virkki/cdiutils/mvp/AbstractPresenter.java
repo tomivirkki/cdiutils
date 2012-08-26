@@ -2,14 +2,14 @@ package org.vaadin.virkki.cdiutils.mvp;
 
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
@@ -31,7 +31,7 @@ public abstract class AbstractPresenter<T extends View> implements Serializable 
     @Preconfigured
     protected transient Logger logger;
     @Inject
-    private BeanManager beanManager;
+    private Instance<View> viewInstance;
 
     protected T view;
 
@@ -41,13 +41,9 @@ public abstract class AbstractPresenter<T extends View> implements Serializable 
     @PostConstruct
     protected void postConstruct() {
         // ViewInterface must be defined
-        Class<? extends View> viewInterface = getClass().getAnnotation(
+        final Class<? extends View> viewInterface = getClass().getAnnotation(
                 ViewInterface.class).value();
-        // Just one bean implementing the view interface should be found
-        Bean<?> bean = beanManager.getBeans(viewInterface).iterator().next();
-        // Get the contextual instance
-        view = (T) beanManager.getReference(bean, bean.getBeanClass(),
-                beanManager.createCreationalContext(bean));
+        view = (T) viewInstance.select(viewInterface).get();
 
         initPresenter();
         logger.info("Presenter initialized: " + getClass());
@@ -71,6 +67,7 @@ public abstract class AbstractPresenter<T extends View> implements Serializable 
      */
     @Target({ ElementType.TYPE })
     @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
     public static @interface ViewInterface {
         Class<? extends View> value();
     }
