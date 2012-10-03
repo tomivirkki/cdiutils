@@ -13,7 +13,7 @@ import javax.inject.Inject;
 
 import org.vaadin.virkki.cdiutils.TextBundle;
 
-import com.vaadin.terminal.Sizeable.Unit;
+import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.AbstractField;
@@ -213,9 +213,9 @@ public class ComponentProducers implements Serializable {
             }
         }
 
-        final String debugId = preconfigured.debugId();
-        if (!debugId.isEmpty()) {
-            component.setDebugId(debugId);
+        final String id = preconfigured.id();
+        if (!id.isEmpty()) {
+            component.setId(id);
         }
 
         if (preconfigured.sizeFull()) {

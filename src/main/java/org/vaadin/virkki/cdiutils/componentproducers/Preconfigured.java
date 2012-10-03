@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
 
-import com.vaadin.terminal.Sizeable.Unit;
+import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Component;
 
@@ -81,7 +81,7 @@ public @interface Preconfigured {
     String caption() default "";
 
     @Nonbinding
-    String debugId() default "";
+    String id() default "";
 
     @Nonbinding
     boolean sizeUndefined() default false;

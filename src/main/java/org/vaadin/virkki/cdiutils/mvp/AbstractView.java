@@ -1,6 +1,6 @@
 package org.vaadin.virkki.cdiutils.mvp;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
+import com.vaadin.cdi.VaadinUI;
 
 /**
  * Abstract implementation of CDI Utils MVP-pattern view.
@@ -8,7 +8,7 @@ import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
  * @author Tomi Virkki / Vaadin Ltd
  */
 @SuppressWarnings("serial")
-@VaadinScoped
+@VaadinUI
 public abstract class AbstractView extends ViewComponent implements View {
     private boolean initialized;
 
@@ -19,7 +19,8 @@ public abstract class AbstractView extends ViewComponent implements View {
     public void openView() {
         if (viewInterface == null) {
             // Determine the view interface
-            for (Class<?> clazz : AbstractView.this.getClass().getInterfaces()) {
+            for (final Class<?> clazz : AbstractView.this.getClass()
+                    .getInterfaces()) {
                 if (!clazz.equals(View.class)
                         && View.class.isAssignableFrom(clazz)) {
                     viewInterface = (Class<? extends View>) clazz;

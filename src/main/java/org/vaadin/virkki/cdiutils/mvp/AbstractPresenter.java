@@ -12,8 +12,9 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
 import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
+
+import com.vaadin.cdi.VaadinUI;
 
 /**
  * Abstract implementation of CDI Utils MVP-pattern presenter. Associated
@@ -25,7 +26,7 @@ import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
  * @author Tomi Virkki / Vaadin Ltd
  */
 @SuppressWarnings("serial")
-@VaadinScoped
+@VaadinUI
 public abstract class AbstractPresenter<T extends View> implements Serializable {
     @Inject
     @Preconfigured
