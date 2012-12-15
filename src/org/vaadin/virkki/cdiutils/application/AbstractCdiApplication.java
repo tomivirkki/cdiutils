@@ -80,7 +80,7 @@ public abstract class AbstractCdiApplication extends Application implements
         return window;
     }
 
-    private void assertWindowHasNoContent(final Window window) {
+    protected void assertWindowHasNoContent(final Window window) {
         if (window == null || window.getContent().getComponentIterator().hasNext()) {
             throw new CdiUtilsException(
                     "instantiateNewWindowIfNeeded() should only be used "
