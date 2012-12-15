@@ -68,22 +68,25 @@ public abstract class AbstractCdiApplication extends Application implements
         Window window = getExistingWindow(name);
         if (window == null) {
             window = instantiateNewWindowIfNeeded(name);
-            if (window != null) {
-                if (window.getContent().getComponentIterator().hasNext()) {
-                    throw new CdiUtilsException(
-                            "instantiateNewWindowIfNeeded() should only be used "
-                                    + "for instantiating new Windows. Populate the Window"
-                                    + "in buildNewWindow(Window)");
-                }
-                window.setName(name);
-                addWindow(window);
-                requestData.get().setWindow(window);
-                buildNewWindow(window);
-                window.open(new ExternalResource(window.getURL()));
-            }
+            assertWindowHasNoContent(window);
+
+            window.setName(name);
+            addWindow(window);
+
+            buildNewWindow(window);
+            window.open(new ExternalResource(window.getURL()));
         }
         requestData.get().setWindow(window);
         return window;
+    }
+
+    private void assertWindowHasNoContent(final Window window) {
+        if (window == null || window.getContent().getComponentIterator().hasNext()) {
+            throw new CdiUtilsException(
+                    "instantiateNewWindowIfNeeded() should only be used "
+                            + "for instantiating new Windows. Populate the Window"
+                            + "in buildNewWindow(Window)");
+        }
     }
 
     protected Window getExistingWindow(final String name) {
