@@ -30,8 +30,9 @@ public abstract class AbstractCdiApplication extends Application implements
 
     @Inject
     private BeanManager beanManager;
+
     @Inject
-    private Instance<RequestData> requestData;
+    protected Instance<RequestData> requestData;
 
     private ApplicationBeanStore beanStore;
 
@@ -64,26 +65,29 @@ public abstract class AbstractCdiApplication extends Application implements
      * Do not invoke!
      */
     @Override
-    public final Window getWindow(final String name) {
+    public Window getWindow(final String name) {
         Window window = getExistingWindow(name);
         if (window == null) {
             window = instantiateNewWindowIfNeeded(name);
-            if (window != null) {
-                if (window.getContent().getComponentIterator().hasNext()) {
-                    throw new CdiUtilsException(
-                            "instantiateNewWindowIfNeeded() should only be used "
-                                    + "for instantiating new Windows. Populate the Window"
-                                    + "in buildNewWindow(Window)");
-                }
-                window.setName(name);
-                addWindow(window);
-                requestData.get().setWindow(window);
-                buildNewWindow(window);
-                window.open(new ExternalResource(window.getURL()));
-            }
+            assertWindowHasNoContent(window);
+
+            window.setName(name);
+            addWindow(window);
+
+            buildNewWindow(window);
+            window.open(new ExternalResource(window.getURL()));
         }
         requestData.get().setWindow(window);
         return window;
+    }
+
+    protected void assertWindowHasNoContent(final Window window) {
+        if (window == null || window.getContent().getComponentIterator().hasNext()) {
+            throw new CdiUtilsException(
+                    "instantiateNewWindowIfNeeded() should only be used "
+                            + "for instantiating new Windows. Populate the Window"
+                            + "in buildNewWindow(Window)");
+        }
     }
 
     protected Window getExistingWindow(final String name) {
