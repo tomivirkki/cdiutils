@@ -30,8 +30,9 @@ public abstract class AbstractCdiApplication extends Application implements
 
     @Inject
     private BeanManager beanManager;
+
     @Inject
-    private Instance<RequestData> requestData;
+    protected Instance<RequestData> requestData;
 
     private ApplicationBeanStore beanStore;
 
