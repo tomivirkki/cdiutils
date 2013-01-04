@@ -45,10 +45,13 @@ public @interface Preconfigured {
     boolean nullSelectionAllowed() default true;
 
     @Nonbinding
-    String styleName() default "";
+    String[] styleName() default {};
 
     @Nonbinding
     boolean spacing() default false;
+
+    @Nonbinding
+    boolean[] margin() default false;
 
     @Nonbinding
     boolean sizeFull() default false;

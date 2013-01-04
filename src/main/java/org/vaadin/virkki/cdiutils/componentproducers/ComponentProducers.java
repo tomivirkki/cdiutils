@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import org.vaadin.virkki.cdiutils.TextBundle;
 
 import com.vaadin.server.Sizeable.Unit;
+import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbsoluteLayout;
 import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.AbstractField;
@@ -127,6 +128,30 @@ public class ComponentProducers implements Serializable {
                     configureAbstractSelectApi((AbstractSelect) component,
                             preconfigured);
                 }
+
+                MarginInfo mi = null;
+                final boolean[] margin = preconfigured.margin();
+                if (margin.length == 1) {
+                    mi = new MarginInfo(margin[0]);
+                } else if (margin.length == 2) {
+                    mi = new MarginInfo(margin[0], margin[1], margin[0],
+                            margin[1]);
+                } else if (margin.length == 3) {
+                    mi = new MarginInfo(margin[0], margin[1], margin[2],
+                            margin[1]);
+                } else if (margin.length == 4) {
+                    mi = new MarginInfo(margin[0], margin[1], margin[2],
+                            margin[3]);
+                }
+
+                if (mi != null) {
+                    if (component instanceof AbstractOrderedLayout) {
+                        ((AbstractOrderedLayout) component).setMargin(mi);
+                    } else if (component instanceof GridLayout) {
+                        ((GridLayout) component).setMargin(mi);
+                    }
+                }
+
                 if (component instanceof AbstractOrderedLayout) {
                     ((AbstractOrderedLayout) component)
                             .setSpacing(preconfigured.spacing());
@@ -182,9 +207,11 @@ public class ComponentProducers implements Serializable {
         component.setVisible(preconfigured.visible());
         component.setReadOnly(preconfigured.readOnly());
 
-        final String styleName = preconfigured.styleName();
-        if (!styleName.isEmpty()) {
-            component.addStyleName(styleName);
+        final String[] styleName = preconfigured.styleName();
+        if (styleName.length > 0) {
+            for (final String style : styleName) {
+                component.addStyleName(style);
+            }
         }
 
         final String caption = preconfigured.caption();
