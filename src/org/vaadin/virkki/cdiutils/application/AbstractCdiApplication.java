@@ -61,10 +61,10 @@ public abstract class AbstractCdiApplication extends Application implements
     }
 
     /**
-     * Do not invoke!
+     * Do not override unless you know what you are doing!
      */
     @Override
-    public final Window getWindow(final String name) {
+    public Window getWindow(final String name) {
         Window window = getExistingWindow(name);
         if (window == null) {
             window = instantiateNewWindowIfNeeded(name);
