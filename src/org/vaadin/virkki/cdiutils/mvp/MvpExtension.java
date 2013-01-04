@@ -16,6 +16,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ObserverMethod;
 
+import org.vaadin.virkki.cdiutils.CdiUtilsException;
 import org.vaadin.virkki.cdiutils.mvp.AbstractPresenter.ViewInterface;
 import org.vaadin.virkki.cdiutils.mvp.CDIEvent.CDIEventImpl;
 
@@ -33,10 +34,11 @@ public class MvpExtension implements Extension, Serializable {
      * @param afterBeanDiscovery
      * @param beanManager
      */
-    void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery,
+    void afterBeanDiscovery(
+            @Observes final AfterBeanDiscovery afterBeanDiscovery,
             final BeanManager beanManager) {
 
-        Iterator<Bean<?>> beanIterator = beanManager.getBeans(
+        final Iterator<Bean<?>> beanIterator = beanManager.getBeans(
                 AbstractPresenter.class).iterator();
         while (beanIterator.hasNext()) {
             final Bean<?> bean = beanIterator.next();
@@ -49,8 +51,13 @@ public class MvpExtension implements Extension, Serializable {
 
                         @Override
                         public Set<Annotation> getObservedQualifiers() {
-                            Set<Annotation> qualifiers = new HashSet<Annotation>();
-                            Class<? extends View> viewInterface = getBeanClass()
+                            final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                            if (getBeanClass().getAnnotation(
+                                    ViewInterface.class) == null) {
+                                throw new CdiUtilsException(
+                                        "@ViewInterface must be declared for Presenters");
+                            }
+                            final Class<? extends View> viewInterface = getBeanClass()
                                     .getAnnotation(ViewInterface.class).value();
                             qualifiers.add(new CDIEventImpl(viewInterface
                                     .getName() + AbstractPresenter.VIEW_OPEN));
@@ -75,8 +82,8 @@ public class MvpExtension implements Extension, Serializable {
                         @SuppressWarnings("rawtypes")
                         @Override
                         public void notify(final ParameterDTO event) {
-                            Object presenter = beanManager.getReference(bean,
-                                    getBeanClass(),
+                            final Object presenter = beanManager.getReference(
+                                    bean, getBeanClass(),
                                     beanManager.createCreationalContext(bean));
                             ((AbstractPresenter) presenter).viewOpened();
                         }
