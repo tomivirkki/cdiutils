@@ -5,6 +5,10 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.vaadin.virkki.cdiutils.application.VaadinContext.BeanStoreContainer;
+
+import com.vaadin.server.ClientConnector.DetachEvent;
+import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.server.DefaultUIProvider;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.ui.UI;
@@ -34,6 +38,19 @@ public class CdiUIProvider extends DefaultUIProvider {
         final UI ui = (UI) beanManager.getReference(uiBean,
                 uiBean.getBeanClass(),
                 beanManager.createCreationalContext(uiBean));
+
+        ui.addDetachListener(new DetachListener() {
+            @Override
+            public void detach(final DetachEvent event) {
+                final Bean<?> containerBean = beanManager
+                        .getBeans(BeanStoreContainer.class).iterator().next();
+                final BeanStoreContainer beanStoreContainer = (BeanStoreContainer) beanManager
+                        .getReference(containerBean, containerBean
+                                .getBeanClass(), beanManager
+                                .createCreationalContext(containerBean));
+                beanStoreContainer.uiDetached(ui.getUIId());
+            }
+        });
 
         CurrentInstance.set(UICreateEvent.class, null);
 

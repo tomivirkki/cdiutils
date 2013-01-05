@@ -7,12 +7,9 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.SessionScoped;
@@ -25,8 +22,6 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Scope;
-
-import org.vaadin.virkki.cdiutils.application.VaadinContext.UIBeanStore.ContextualInstance;
 
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.ui.UI;
@@ -166,33 +161,14 @@ public class VaadinContext implements Extension {
 
         public UIBeanStore getBeanStore(final int uiId) {
             if (!beanStores.containsKey(uiId)) {
-                // TODO: Some kind of a close listener for UIs would be great
-                detachClosedUIs();
                 beanStores.put(uiId, new UIBeanStore());
-
             }
             return beanStores.get(uiId);
         }
 
-        private void detachClosedUIs() {
-            final Collection<Integer> closedUIs = new ArrayList<Integer>();
-            for (final Entry<Integer, UIBeanStore> entry : beanStores
-                    .entrySet()) {
-                for (final Entry<Bean<?>, ContextualInstance<?>> instanceEntry : entry
-                        .getValue().instances.entrySet()) {
-                    final Object instance = instanceEntry.getValue()
-                            .getInstance();
-                    if (instance instanceof UI && ((UI) instance).isClosing()) {
-                        closedUIs.add(((UI) instance).getUIId());
-                    }
-                }
-            }
-
-            for (final Integer closedUI : closedUIs) {
-                final UIBeanStore uiBeanStore = beanStores.get(closedUI);
-                uiBeanStore.dereferenceAllBeanInstances();
-                beanStores.remove(closedUI);
-            }
+        public void uiDetached(final int uiId) {
+            beanStores.get(uiId).dereferenceAllBeanInstances();
+            beanStores.remove(uiId);
         }
 
         @SuppressWarnings("unused")
