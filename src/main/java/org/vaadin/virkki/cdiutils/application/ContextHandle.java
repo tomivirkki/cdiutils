@@ -4,12 +4,12 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.BeanStoreContainer;
-import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
+import org.vaadin.virkki.cdiutils.application.UIContext.BeanStoreContainer;
+import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
 
 import com.vaadin.ui.UI;
 
-@VaadinScoped
+@UIScoped
 public class ContextHandle {
 
     @Inject
@@ -18,9 +18,9 @@ public class ContextHandle {
     private BeanManager beanManager;
 
     /**
-     * Requests VaadinContext to dereference a bean instance of the provided
-     * class. The instance will not be gc'd until it's completely dereferenced
-     * by the application as well.
+     * Requests UIContext to dereference a bean instance of the provided class.
+     * The instance will not be gc'd until it's completely dereferenced by the
+     * application as well.
      * 
      * @param instance
      */

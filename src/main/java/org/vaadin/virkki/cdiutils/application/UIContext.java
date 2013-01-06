@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.SessionScoped;
@@ -21,23 +22,26 @@ import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
+import javax.inject.Inject;
 import javax.inject.Scope;
+
+import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
 
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
 /**
- * CDI Extension which registers VaadinContextImpl context.
+ * CDI Extension which registers UIContextImpl context.
  * 
  * @author Tomi Virkki / Vaadin Ltd
  */
-public class VaadinContext implements Extension {
+public class UIContext implements Extension {
 
     void afterBeanDiscovery(
             @Observes final AfterBeanDiscovery afterBeanDiscovery,
             final BeanManager beanManager) {
-        afterBeanDiscovery.addContext(new VaadinContextImpl(beanManager));
+        afterBeanDiscovery.addContext(new UIContextImpl(beanManager));
     }
 
     /**
@@ -46,11 +50,11 @@ public class VaadinContext implements Extension {
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
-    private static class VaadinContextImpl implements Context {
+    private static class UIContextImpl implements Context {
 
         private final BeanManager beanManager;
 
-        public VaadinContextImpl(final BeanManager beanManager) {
+        public UIContextImpl(final BeanManager beanManager) {
             this.beanManager = beanManager;
         }
 
@@ -85,7 +89,7 @@ public class VaadinContext implements Extension {
 
         @Override
         public Class<? extends Annotation> getScope() {
-            return VaadinScoped.class;
+            return UIScoped.class;
         }
 
         @Override
@@ -157,6 +161,10 @@ public class VaadinContext implements Extension {
     @SuppressWarnings("serial")
     @SessionScoped
     static class BeanStoreContainer implements Serializable {
+        @Inject
+        @Preconfigured
+        protected transient Logger logger;
+
         private final Map<Integer, UIBeanStore> beanStores = new HashMap<Integer, UIBeanStore>();
 
         public UIBeanStore getBeanStore(final int uiId) {
@@ -169,6 +177,7 @@ public class VaadinContext implements Extension {
         public void uiDetached(final int uiId) {
             beanStores.get(uiId).dereferenceAllBeanInstances();
             beanStores.remove(uiId);
+            logger.info("UI with id: " + uiId + " was removed from UI scope.");
         }
 
         @SuppressWarnings("unused")
@@ -181,7 +190,7 @@ public class VaadinContext implements Extension {
     }
 
     /**
-     * Annotation used for declaring bean class scope for VaadinScoped beans
+     * Annotation used for declaring bean class scope for UIScoped beans
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
@@ -189,7 +198,7 @@ public class VaadinContext implements Extension {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Inherited
-    public @interface VaadinScoped {
+    public @interface UIScoped {
     }
 
 }

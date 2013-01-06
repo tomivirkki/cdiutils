@@ -1,6 +1,6 @@
 package org.vaadin.virkki.cdiutils.mvp;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
+import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
 
 /**
  * Abstract implementation of CDI Utils MVP-pattern view.
@@ -8,7 +8,7 @@ import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
  * @author Tomi Virkki / Vaadin Ltd
  */
 @SuppressWarnings("serial")
-@VaadinScoped
+@UIScoped
 public abstract class AbstractView extends ViewComponent implements View {
     private boolean initialized;
 

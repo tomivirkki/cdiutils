@@ -5,7 +5,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.BeanStoreContainer;
+import org.vaadin.virkki.cdiutils.application.UIContext.BeanStoreContainer;
 
 import com.vaadin.server.ClientConnector.DetachEvent;
 import com.vaadin.server.ClientConnector.DetachListener;

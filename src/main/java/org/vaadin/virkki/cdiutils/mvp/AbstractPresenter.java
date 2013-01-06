@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import org.vaadin.virkki.cdiutils.application.VaadinContext.VaadinScoped;
+import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
 import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
 
 /**
@@ -25,7 +25,7 @@ import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
  * @author Tomi Virkki / Vaadin Ltd
  */
 @SuppressWarnings("serial")
-@VaadinScoped
+@UIScoped
 public abstract class AbstractPresenter<T extends View> implements Serializable {
     @Inject
     @Preconfigured
