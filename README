@@ -1,9 +1,9 @@
 CDI Utils is an add-on for Vaadin framework aiming at simplifying
 application development with Vaadin and CDI. Here are the utilities it provides:
 
-1. @VaadinScope
-Custom CDI scope designed especially for vaadin applications. @VaadinScope instances are
-bound to a context defined by Vaadin UIs. 
+1. @UIScoped
+Custom CDI scope designed especially for vaadin applications. @UIScoped beans are
+bound to a context defined by Vaadin UIs.
 
 
 2. Lightweight MVP framework

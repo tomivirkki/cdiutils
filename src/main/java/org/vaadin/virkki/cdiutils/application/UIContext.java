@@ -99,7 +99,7 @@ public class UIContext implements Extension {
     }
 
     /**
-     * Datastructure for storing bean instances in {@link VaadinScope} context.
+     * Datastructure for storing contextual bean instances.
      * 
      * @author Tomi Virkki / Vaadin Ltd
      */
@@ -186,6 +186,30 @@ public class UIContext implements Extension {
             for (final UIBeanStore beanStore : beanStores.values()) {
                 beanStore.dereferenceAllBeanInstances();
             }
+        }
+    }
+
+    @UIScoped
+    public static class ContextDelegate {
+
+        @Inject
+        private BeanStoreContainer beanStoreContainer;
+        @Inject
+        private BeanManager beanManager;
+
+        /**
+         * Requests UIContext to dereference a bean instance of the provided
+         * class. The instance will not be gc'd until it's completely
+         * dereferenced by the application as well.
+         * 
+         * @param instance
+         */
+        public void dereferenceBeanInstance(
+                final Class<? extends Object> beanClass) {
+            final Bean<?> bean = beanManager.getBeans(beanClass).iterator()
+                    .next();
+            beanStoreContainer.getBeanStore(UI.getCurrent().getUIId())
+                    .dereferenceBeanInstance(bean);
         }
     }
 
