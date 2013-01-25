@@ -118,4 +118,7 @@ public @interface Preconfigured {
 
     @Nonbinding
     ItemCaptionMode itemCaptionMode() default ItemCaptionMode.EXPLICIT_DEFAULTS_ID;
+
+    @Nonbinding
+    boolean localized() default true;
 }
