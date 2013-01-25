@@ -17,6 +17,8 @@ import com.vaadin.util.CurrentInstance;
 @SuppressWarnings("serial")
 public class CdiUIProvider extends DefaultUIProvider {
 
+    public static final String PROVIDER_NAME = "org.vaadin.virkki.cdiutils.application.CdiUIProvider";
+
     private BeanManager beanManager;
 
     public CdiUIProvider() {
