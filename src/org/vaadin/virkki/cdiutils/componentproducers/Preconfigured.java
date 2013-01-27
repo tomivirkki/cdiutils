@@ -123,4 +123,7 @@ public @interface Preconfigured {
 
     @Nonbinding
     int itemCaptionMode() default -1;
+
+    @Nonbinding
+    boolean localized() default true;
 }

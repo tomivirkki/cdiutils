@@ -14,7 +14,7 @@ import javax.inject.Qualifier;
  * @author Tomi Virkki / Vaadin Ltd
  */
 @Qualifier
-@Target({ ElementType.PARAMETER })
+@Target({ ElementType.PARAMETER, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CDIEvent {
     String value();

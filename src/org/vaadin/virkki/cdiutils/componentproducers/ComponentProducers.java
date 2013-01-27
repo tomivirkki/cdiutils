@@ -82,6 +82,8 @@ public class ComponentProducers implements Serializable {
 
     @Inject
     private Instance<TextBundle> textBundle;
+    @Inject
+    private Instance<Localizer> localizer;
 
     /**
      * Applies @Preconfigured attributes to Vaadin Components.
@@ -217,6 +219,10 @@ public class ComponentProducers implements Serializable {
             if (!captionKey.isEmpty()) {
                 try {
                     component.setCaption(textBundle.get().getText(captionKey));
+                    if (preconfigured.localized()) {
+                        localizer.get().addLocalizedCaption(component,
+                                captionKey);
+                    }
                 } catch (final UnsatisfiedResolutionException e) {
                     component.setCaption("No TextBundle implementation found!");
                 }
@@ -231,6 +237,10 @@ public class ComponentProducers implements Serializable {
                 try {
                     ((Label) component).setValue(textBundle.get().getText(
                             labelValueKey));
+                    if (preconfigured.localized()) {
+                        localizer.get().addLocalizedLabelValue(
+                                (Label) component, labelValueKey);
+                    }
                 } catch (final UnsatisfiedResolutionException e) {
                     component.setCaption("No TextBundle implementation found!");
                 }
