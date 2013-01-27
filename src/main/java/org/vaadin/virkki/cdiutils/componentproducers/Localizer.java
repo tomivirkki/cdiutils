@@ -19,7 +19,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 
 /**
- * UIScoped collection of components whose captions or value should be updated
+ * Collection of components whose captions or value should be localized
  * 
  * @author Tomi Virkki / Vaadin Ltd
  */
