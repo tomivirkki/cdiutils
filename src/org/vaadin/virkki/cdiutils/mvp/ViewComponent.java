@@ -2,8 +2,6 @@ package org.vaadin.virkki.cdiutils.mvp;
 
 import java.util.logging.Logger;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.event.Reception;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.inject.Inject;
@@ -11,7 +9,6 @@ import javax.inject.Inject;
 import org.vaadin.virkki.cdiutils.TextBundle;
 import org.vaadin.virkki.cdiutils.application.AbstractCdiApplication;
 import org.vaadin.virkki.cdiutils.application.RequestData;
-import org.vaadin.virkki.cdiutils.componentproducers.Localizer;
 import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
 import org.vaadin.virkki.cdiutils.mvp.CDIEvent.CDIEventImpl;
 
@@ -69,19 +66,5 @@ public abstract class ViewComponent extends CustomComponent {
      */
     protected AbstractCdiApplication getContextApplication() {
         return requestData.get().getApplication();
-    }
-
-    void observeLocalize(
-            @Observes(notifyObserver = Reception.IF_EXISTS) @CDIEvent(Localizer.UPDATE_LOCALIZED_VALUES) final ParameterDTO object) {
-        localize();
-    }
-
-    /**
-     * Override to localize the view. Firing a
-     * 
-     * @CDIEvent(Localizer.UPDATE_LOCALIZED_VALUES) event will eventually invoke
-     *                                              this method
-     */
-    protected void localize() {
     }
 }
