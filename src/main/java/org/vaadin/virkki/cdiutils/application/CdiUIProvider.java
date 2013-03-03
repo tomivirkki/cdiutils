@@ -1,5 +1,6 @@
 package org.vaadin.virkki.cdiutils.application;
 
+import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
@@ -44,13 +45,19 @@ public class CdiUIProvider extends DefaultUIProvider {
         ui.addDetachListener(new DetachListener() {
             @Override
             public void detach(final DetachEvent event) {
-                final Bean<?> containerBean = beanManager
-                        .getBeans(BeanStoreContainer.class).iterator().next();
-                final BeanStoreContainer beanStoreContainer = (BeanStoreContainer) beanManager
-                        .getReference(containerBean, containerBean
-                                .getBeanClass(), beanManager
-                                .createCreationalContext(containerBean));
-                beanStoreContainer.uiDetached(ui.getUIId());
+                try {
+                    final Bean<?> containerBean = beanManager
+                            .getBeans(BeanStoreContainer.class).iterator()
+                            .next();
+                    final BeanStoreContainer beanStoreContainer = (BeanStoreContainer) beanManager
+                            .getReference(containerBean, containerBean
+                                    .getBeanClass(), beanManager
+                                    .createCreationalContext(containerBean));
+                    beanStoreContainer.uiDetached(ui.getUIId());
+                } catch (final ContextNotActiveException exception) {
+                    // Ignore, if a session has been invalidated, all the UI
+                    // related beans have already been handled
+                }
             }
         });
 

@@ -180,7 +180,6 @@ public class UIContext implements Extension {
             logger.info("UI with id: " + uiId + " was removed from UI scope.");
         }
 
-        @SuppressWarnings("unused")
         @PreDestroy
         private void preDestroy() {
             for (final UIBeanStore beanStore : beanStores.values()) {
