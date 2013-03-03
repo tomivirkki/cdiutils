@@ -1,6 +1,10 @@
 package org.vaadin.virkki.cdiutils.mvp;
 
+import javax.enterprise.event.Observes;
+import javax.enterprise.event.Reception;
+
 import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
+import org.vaadin.virkki.cdiutils.componentproducers.Localizer;
 
 /**
  * Abstract implementation of CDI Utils MVP-pattern view.
@@ -16,7 +20,7 @@ public abstract class AbstractView extends ViewComponent implements View {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void openView() {
+    public final void openView() {
         if (viewInterface == null) {
             // Determine the view interface
             for (final Class<?> clazz : AbstractView.this.getClass()
@@ -36,6 +40,20 @@ public abstract class AbstractView extends ViewComponent implements View {
         fireViewEvent(viewInterface.getName() + AbstractPresenter.VIEW_OPEN,
                 this);
         logger.info("View accessed: " + viewInterface);
+    }
+
+    final void observeLocalize(
+            @Observes(notifyObserver = Reception.IF_EXISTS) @CDIEvent(Localizer.UPDATE_LOCALIZED_VALUES) final ParameterDTO object) {
+        localize();
+    }
+
+    /**
+     * Override to localize the view.
+     * 
+     * @CDIEvent(Localizer.UPDATE_LOCALIZED_VALUES) event will eventually invoke
+     *                                              this method
+     */
+    protected void localize() {
     }
 
     /**
