@@ -11,10 +11,10 @@ import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.inject.Inject;
 
 import org.vaadin.virkki.cdiutils.TextBundle;
-import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
 import org.vaadin.virkki.cdiutils.mvp.CDIEvent;
 import org.vaadin.virkki.cdiutils.mvp.ParameterDTO;
 
+import com.vaadin.cdi.UIScoped;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
 

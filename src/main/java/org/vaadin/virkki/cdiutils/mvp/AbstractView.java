@@ -3,8 +3,9 @@ package org.vaadin.virkki.cdiutils.mvp;
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.Reception;
 
-import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
 import org.vaadin.virkki.cdiutils.componentproducers.Localizer;
+
+import com.vaadin.cdi.UIScoped;
 
 /**
  * Abstract implementation of CDI Utils MVP-pattern view.

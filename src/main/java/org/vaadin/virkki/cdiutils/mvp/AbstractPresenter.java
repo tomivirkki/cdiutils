@@ -12,8 +12,9 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import org.vaadin.virkki.cdiutils.application.UIContext.UIScoped;
 import org.vaadin.virkki.cdiutils.componentproducers.Preconfigured;
+
+import com.vaadin.cdi.UIScoped;
 
 /**
  * Abstract implementation of CDI Utils MVP-pattern presenter. Associated
