@@ -1,3 +1,16 @@
+----------------------------
+THIS PROJECT IS DISCONTINUED!!!!
+
+I've decided to discontinue CDI Utils as such. 
+The custom CDI scope part is nowadays provided by Vaadin under a complementary license 
+so there's no longer need for a third party implementation.
+The remaining utilities are separated as their own projects, namely:
+CDI Properties (https://github.com/tomivirkki/cdiproperties.git)
+and CDI MVP (https://github.com/tomivirkki/cdimvp.git)
+
+----------------------------
+
+
 CDI Utils is an add-on for Vaadin framework aiming at simplifying
 application development with Vaadin and CDI. Here are the utilities it provides:
 
